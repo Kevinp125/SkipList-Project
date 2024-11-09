@@ -11,7 +11,7 @@ import java.util.SortedSet;
 public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
 
     SkipListSetItem root;
-    int values;
+    private int values;
 
     public SkipListSet() {
         root = new SkipListSetItem(null, 1);
@@ -28,10 +28,10 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
     //================SkipListSetItem Class==================
 
     private class SkipListSetItem {
-        T payload; //payload is the item being stored in our SkipList it is of generic type T
-        int height; //height of what our node is going to be
-        ArrayList<SkipListSetItem> next; //decalring ArrayLists for our next and previous pointers. As we randomly generate height of an itemWrapper each index of ArrayList contains the next links at that level
-        ArrayList<SkipListSetItem> prev; //same thing with prev except this one will just have all the links before (doubly linked list)
+        private T payload; //payload is the item being stored in our SkipList it is of generic type T
+        private int height; //height of what our node is going to be
+        private ArrayList<SkipListSetItem> next; //decalring ArrayLists for our next and previous pointers. As we randomly generate height of an itemWrapper each index of ArrayList contains the next links at that level
+        private ArrayList<SkipListSetItem> prev; //same thing with prev except this one will just have all the links before (doubly linked list)
 
         public SkipListSetItem(T payload){
             this.payload = payload; //when a SkipListSetItem gets intialized user will pass in a payload so we will set that payload equal to ours
@@ -124,7 +124,7 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
 
     @Override
     public boolean isEmpty() {
-        if(root == null)
+        if(root.next.get(0) == null)
             return true;
         else
             return false;
@@ -217,6 +217,7 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
 
         }
 
+        values++;
         return true; //return true once all is executed to signify that we succesfully added an item.
     }
 

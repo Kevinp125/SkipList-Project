@@ -24,7 +24,12 @@ public class SkipListSetTester{ //this class is just to test what I am implement
     else
       System.out.println("Not found");
 
+    if(skippy.isEmpty())
+      System.out.println("its empty");
+    else
+      System.out.println("not empty");
 
+    System.out.println("Total values in skip list is " +skippy.size());
 
 
   }
