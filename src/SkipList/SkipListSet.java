@@ -80,6 +80,7 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
     private class SkipListSetIterator implements Iterator<T>{
 
         private SkipListSetItem current;
+        private SkipListSetItem lastReturned; //will use this to keep track of what item we are deleting
 
         public SkipListSetIterator(){
             current = root.next.get(0); //setting current to start one after the root since my root is a dummy root and the payload item is null I dont want user to see that
@@ -102,13 +103,20 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
             }
             
             T payload = current.payload; //store the value of the payload on the current node so we can return it later
+            lastReturned = current; //remove function below operates by removin the last item current returned. We need to keep a reference to it because below we move the pointer to the next item to prepare it for the next stage
             current = current.next.get(0); //move the current one thing to the right
             return payload; //return the payload item
         }
         
         @Override
         public void remove() {
-            throw new UnsupportedOperationException("Remove not supported.");
+            if(lastReturned == null) //if lastReturned isnt pointing to an node its because remove was already called
+                throw new IllegalStateException("Cannot call remove() back to back. Need to call a next() so that remove knows which value to delete");
+
+                //we want to just call remove method we already have set up that properly rearranges the references and removes a method by travering the list top down
+                
+                SkipListSet.this.remove(lastReturned.payload); //have to use this here in order to call remove since SkipListSet isnt static we need to tell java we want to use remove method in the "this instance" that SkipListSetIterator was created
+                lastReturned = null; //finally once the item is removed make sure that lastReturned is set to null to indicate the removal and enforce the rule that remove() cant be called again until next() is called again and retrieves a valu
         }
 
     }
@@ -185,7 +193,6 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
     public boolean add(T e) {
 
         if(contains(e)){
-            System.out.println("Inside contains not adding this node");
             return false;
         } //since it is a SortedSet NO duplicates use contains function to check if element is in skip list if it is just return false
 
@@ -217,7 +224,7 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
 
         }
 
-        values++;
+        values++; //make sure once you add a value successfully you increment values
         return true; //return true once all is executed to signify that we succesfully added an item.
     }
 
@@ -305,7 +312,8 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         SkipListSetItem current = root.next.get(0);
 
         while(current.next.get(0) != null){
-            System.out.println("Payload: " +current.payload +" Height: " + current.height+" ->");
+            System.out.print ("Payload: " +current.payload +" Height: " + current.height+" -> ");
+            current = current.next.get(0);
         }
 
 

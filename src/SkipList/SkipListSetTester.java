@@ -19,17 +19,17 @@ public class SkipListSetTester{ //this class is just to test what I am implement
 
     // skippy.detailedPrint();
 
-    if(skippy.contains(3))
+    if(skippy.contains(13))
       System.out.println("Value was found");
     else
       System.out.println("Not found");
 
-    if(skippy.isEmpty())
-      System.out.println("its empty");
-    else
-      System.out.println("not empty");
+    // if(skippy.isEmpty())
+    //   System.out.println("its empty");
+    // else
+    //   System.out.println("not empty");
 
-    System.out.println("Total values in skip list is " +skippy.size());
+    // System.out.println("Total values in skip list is " +skippy.size());
 
 
   }
