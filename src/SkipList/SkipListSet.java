@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.SortedSet;
 
@@ -49,7 +50,7 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
             this.payload = payload;
             height = rootHeight;
             next = new ArrayList(rootHeight);
-            next = new ArrayList(rootHeight);
+            prev = new ArrayList(rootHeight);
 
             next.add(null);
             prev.add(null);
@@ -61,7 +62,7 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
 
             Random random = new Random();
             
-            while(height <= maxHeight && random.nextBoolean()){
+            while(height < maxHeight && random.nextBoolean()){
                 height++;
             }
         
@@ -74,18 +75,40 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
     //================END OF SkipListSetItem Class==================
 
     //================Iterator Class==================
+    /* **Class below just helps with printing the actual payload items of our skiplist dont have to worry about levels we just
+        traverse the lowest levels since we need to print each value** */
     private class SkipListSetIterator implements Iterator<T>{
 
-        @Override
-        public boolean hasNext() {
-            // TODO Auto-generated method stub
-            throw new UnsupportedOperationException("Unimplemented method 'hasNext'");
+        private SkipListSetItem current;
+
+        public SkipListSetIterator(){
+            current = root.next.get(0); //setting current to start one after the root since my root is a dummy root and the payload item is null I dont want user to see that
         }
 
         @Override
-        public T next() {
-            // TODO Auto-generated method stub
-            throw new UnsupportedOperationException("Unimplemented method 'next'");
+        public boolean hasNext() { //function checks if theres a next value
+            if(current != null) //not null there is a next value
+                return true; //return true
+            else
+                return false; //null return false
+            
+        }
+
+        @Override
+        public T next() { //function reutrns the payload item in node and moves to the next one
+
+            if(!hasNext()){
+                throw new NoSuchElementException(); //if the skiplist doesnt have a next throw an exception saying there is no next. No point in returning a payload if there isnt a next
+            }
+            
+            T payload = current.payload; //store the value of the payload on the current node so we can return it later
+            current = current.next.get(0); //move the current one thing to the right
+            return payload; //return the payload item
+        }
+        
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException("Remove not supported.");
         }
 
     }
@@ -123,7 +146,7 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
     
             SkipListSetItem current = root; //start traversing from the root
 
-            for(int i = root.height - 1; i >= 0 ; i--){ //always begin from the top levels down since array lists are zero based index make our i the top level which is root.height - 1 and decrease as we go down the levels
+            for(int i = current.height - 1; i >= 0 ; i--){ //always begin from the top levels down since array lists are zero based index make our i the top level which is root.height - 1 and decrease as we go down the levels
                 
                 while(current.next.get(i) != null && current.next.get(i).payload.compareTo(element) < 0){ //loop again so long as the next of the level i we are on isnt null and the next of the level i we are on has a value < than that of our element move there
                     current = current.next.get(i);
@@ -134,14 +157,14 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
 
             //once we exit our loop it is because we reached lowest level and we have to move current one last time because above loop stops one before value we are trying to find
             current = current.next.get(0);
-            return current != null && current.payload.compareTo(element) == 1;
+            return current != null && current.payload.compareTo(element) == 0; //check if the current we are on isnt null if it exists and the item in payload is equal to the element we are searching for return true cause it is contained
 
     }
 
+    //function just creates an instance of our SkipListSetIterator and returns it
     @Override
     public Iterator<T> iterator() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'iterator'");
+        return new SkipListSetIterator(); //just return an instance of our SkipListSetIterator which implemetns Iterator<T>
     }
 
     @Override
@@ -161,8 +184,11 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
     @Override
     public boolean add(T e) {
 
-        if(contains(e)) //since it is a SortedSet NO duplicates use contains function to check if element is in skip list if it is just return false
+        if(contains(e)){
+            System.out.println("Inside contains not adding this node");
             return false;
+        } //since it is a SortedSet NO duplicates use contains function to check if element is in skip list if it is just return false
+
 
         SkipListSetItem newItem = new SkipListSetItem(e); //create a new item since we will add it further down the line
         SkipListSetItem current = root; //have a current pointer point to root will use it to traverse
@@ -270,4 +296,17 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         throw new UnsupportedOperationException("Unimplemented method 'tailSet'");
     }
 
+
+    //==============Below this is all my personal helper functions=================
+
+    public void detailedPrint(){
+
+        SkipListSetItem current = root.next.get(0);
+
+        while(current.next.get(0) != null){
+            System.out.println("Payload: " +current.payload +" Height: " + current.height+" ->");
+        }
+
+
+    }
 }
