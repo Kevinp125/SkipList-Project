@@ -1,3 +1,10 @@
+/*
+ * Composed by:
+ * Kevin Pereda
+ * COP3503C Tues, Thurs 6:00-7:15p.m
+ * Dr.Gerber
+ */
+
 package SkipList;
 
 import java.util.ArrayList;
@@ -203,8 +210,9 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
 
         if(root.height < newItem.height){ //updating our dummy root node so that its height is always the height of the tallest node
 
-            for(int i = root.height; i < newItem.height; i++){ //loop through our array list of SkipListItem pointers and add null values
+            for(int i = root.height ; i < newItem.height; i++){ //loop through our array list of SkipListItem pointers and add null values
                 root.next.add(null);
+                root.prev.add(null);
             }
 
             root.height = newItem.height; //update the root's height
@@ -260,15 +268,18 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         }
     
         //after we delete from our tree the dummy root node's height could need some readjusting if the node we deleted was the tallest node in the list
-        int maxHeight = findMaxHeight()- 1;
+        int maxHeight = findMaxHeight() - 1;
 
         if(root.height - 1  > maxHeight){//if our root height is bigger than the highest height in the skip list we need to adjust root height so it is the same as this new highest height
+
+            System.out.println("Inside adjusting root");
             for(int i = root.height - 1; i > maxHeight; i--){ //loop from our roots height - 1 (zero based indexing) so long as i > than the current maxheight
                 root.next.remove(i); //remove the index in the next array list because there is nothing to point to at that level
                 root.prev.remove(i); //same thing with the prev array list
             }
-
             root.height = maxHeight + 1;
+
+            System.out.println("root height after adjustment" + root.height);
         }
 
         values--; //make sure once you delete a value successfully you decrement our values variable
@@ -362,7 +373,7 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
     public int findMaxHeight(){
 
         int maxHeight = -1;
-        SkipListSetItem current = root;
+        SkipListSetItem current = root.next.get(0);
 
         while(current != null){
             if(current.height > maxHeight)

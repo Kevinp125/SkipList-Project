@@ -9,17 +9,19 @@ public class SkipListSetTester{ //this class is just to test what I am implement
     skippy.add(13);
     skippy.add(12);
     skippy.add(4);
-    skippy.add(5);
-    skippy.add(1);
-    skippy.add(16);
+    // skippy.add(5);
+    // skippy.add(1);
+    // skippy.add(16);
     
     for(Integer item : skippy){
       System.out.println(item);
     }
 
-    System.out.println("After removing 1");
+    System.out.println("After removing 12");
 
-    skippy.remove(1);
+    skippy.remove(12);
+
+    System.out.println("Max height now is " + skippy.findMaxHeight());
 
     for(Integer item : skippy){
       System.out.println(item);
