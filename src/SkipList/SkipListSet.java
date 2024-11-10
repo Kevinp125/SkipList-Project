@@ -46,7 +46,6 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
             this.payload = payload; //when a SkipListSetItem gets intialized user will pass in a payload so we will set that payload equal to ours
             height = randomHeight();
             System.out.println("height of node  "+ payload+" is " + height);
-            System.out.println("max heighht is currently "+ listMaxHeight);
             next = new ArrayList<>(height);
             prev = new ArrayList<>(height);
 
@@ -275,14 +274,12 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
 
         if(root.height - 1  > maxHeight){//if our root height is bigger than the highest height in the skip list we need to adjust root height so it is the same as this new highest height
 
-            System.out.println("Inside adjusting root");
             for(int i = root.height - 1; i > maxHeight; i--){ //loop from our roots height - 1 (zero based indexing) so long as i > than the current maxheight
                 root.next.remove(i); //remove the index in the next array list because there is nothing to point to at that level
                 root.prev.remove(i); //same thing with the prev array list
             }
             root.height = maxHeight + 1;
 
-            System.out.println("root height after adjustment" + root.height);
         }
 
         values--; //make sure once you delete a value successfully you decrement our values variable
@@ -401,6 +398,30 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         if (newMaxHeight != listMaxHeight) { //if the new maxHeight is the same as our current listMaxHeight then it means we arent at a power of two yet that requires updating. So if they arent equal update maxHeight
             listMaxHeight = newMaxHeight;
         }
+    }
+
+    // *****ASK PROFESSOR HE SAYS TO NOT CALL IT AUTOMATICALLY SO DOES HE JUST WANT FUNCTION HERE TO BE CALLED MANUALLY BY USER*****
+
+    //function randomizes all the heights in our skipList the approach I will take is just readding all the nodes to a new skiplist essentially
+    //so i can just resuse my logic and not reinvent the wheel
+    public void reBalance(){
+
+        ArrayList<T> prevSkipListVals = new ArrayList<>(); //decalring an arrayList of type <T> since we need to keep it generic
+        
+        SkipListSetItem current = root.next.get(0);
+
+        //now in this loop I will loop through our already established SkipListSet and add all of its values into our arrayList so we have all the payloads
+        while(current !=  null){
+            prevSkipListVals.add(current.payload); //add payload to our array list
+            current = current.next.get(0); //move to next item in current skipList
+        }
+
+        //once we have all payload values we can reset our current skipListSet since we want to add all values again so that all the heights get randomized
+
+        root = new SkipListSetItem(null, 1); //initialize our root to now point to a dummy node and not the old skipListSet
+
+        for(T payload : prevSkipListVals) //for each payload value in our prevSkipListVals arrayList
+            add(payload); //just add that payload and since we reset the root all the heights will be randomized. Bam 
 
     }
 }
