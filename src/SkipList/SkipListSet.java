@@ -19,9 +19,11 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
 
     private  SkipListSetItem root;
     private int values;
+    private int listMaxHeight; //function will keep track of the maxHeight one node can have in our skipList
 
     public SkipListSet() {
         root = new SkipListSetItem(null, 1); //we initialize our root to have a payload of null because we are going to make it a dummy node. Also will start with an initial height of 1
+        listMaxHeight = 3; //setting maxHeight to initially be 3 if we set it to 1 there might be some thrashing just have like some leeway for a treshold
         values = 0; //when skiplist is first made it has zero values
     }
 
@@ -44,6 +46,7 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
             this.payload = payload; //when a SkipListSetItem gets intialized user will pass in a payload so we will set that payload equal to ours
             height = randomHeight();
             System.out.println("height of node  "+ payload+" is " + height);
+            System.out.println("max heighht is currently "+ listMaxHeight);
             next = new ArrayList<>(height);
             prev = new ArrayList<>(height);
 
@@ -66,11 +69,10 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
 
         private int randomHeight(){
             int height = 1;
-            int maxHeight = 16;
 
             Random random = new Random();
             
-            while(height < maxHeight && random.nextBoolean()){
+            while(height < listMaxHeight && random.nextBoolean()){
                 height++;
             }
         
@@ -234,6 +236,7 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         }
 
         values++; //make sure once you add a value successfully you increment values
+        updateMaxHeight(); //once we add value to list we need to check and see if the list's max height needs to be updated in order to remain efficient
         return true; //return true once all is executed to signify that we succesfully added an item.
     }
 
@@ -283,6 +286,7 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         }
 
         values--; //make sure once you delete a value successfully you decrement our values variable
+        updateMaxHeight(); //once we remove value from list we need to check and see if the list's max height needs to be updated in order to remain efficient
         return true; //return true once all is executed to signify that we succesfully removed an item.
         
     }
@@ -382,5 +386,21 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         }
         
         return maxHeight;
+    }
+
+    //function dynamically updates our maxHeight of our skip list depending on whether or not the list has grown to a power of 2, so for example 2,4,8,16,32 but it wont update maxHeight if we dont go past a certain treshold which is 3
+    public void updateMaxHeight(){
+
+        /* Below line is calcualting the new maxHeight dependant on how many times do I need to multiply 2 by itself to get close to values. 
+        If we get 3.75 for that division it means we have more or less an amount of values is = to 2 to the power of 3.75. We use math.ceiling
+        to always round up and then compare it with our treshold. If it is greater than the treshold we want to update max height. If it isnt
+        do nothing so we have no thrashing*/
+
+        int newMaxHeight = Math.max(3, (int) Math.ceil(Math.log(values) / Math.log(2))); 
+
+        if (newMaxHeight != listMaxHeight) { //if the new maxHeight is the same as our current listMaxHeight then it means we arent at a power of two yet that requires updating. So if they arent equal update maxHeight
+            listMaxHeight = newMaxHeight;
+        }
+
     }
 }
