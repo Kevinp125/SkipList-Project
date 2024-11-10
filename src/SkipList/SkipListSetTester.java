@@ -17,12 +17,21 @@ public class SkipListSetTester{ //this class is just to test what I am implement
       System.out.println(item);
     }
 
+    System.out.println("After removing 1");
+
+    skippy.remove(1);
+
+    for(Integer item : skippy){
+      System.out.println(item);
+    }
+
+
     // skippy.detailedPrint();
 
-    if(skippy.contains(13))
-      System.out.println("Value was found");
-    else
-      System.out.println("Not found");
+    // if(skippy.contains(13))
+    //   System.out.println("Value was found");
+    // else
+    //   System.out.println("Not found");
 
     // if(skippy.isEmpty())
     //   System.out.println("its empty");

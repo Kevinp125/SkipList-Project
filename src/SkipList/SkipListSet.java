@@ -10,15 +10,15 @@ import java.util.SortedSet;
 
 public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
 
-    SkipListSetItem root;
+    private  SkipListSetItem root;
     private int values;
 
     public SkipListSet() {
-        root = new SkipListSetItem(null, 1);
-        values = 0;
+        root = new SkipListSetItem(null, 1); //we initialize our root to have a payload of null because we are going to make it a dummy node. Also will start with an initial height of 1
+        values = 0; //when skiplist is first made it has zero values
     }
 
-    public SkipListSet(Collection <T> collection){
+    public SkipListSet(Collection <T> collection){ //this constuctor is if user wants to make an already established collection into a SkipList
         this();
         addAll(collection);
     }
@@ -36,6 +36,7 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         public SkipListSetItem(T payload){
             this.payload = payload; //when a SkipListSetItem gets intialized user will pass in a payload so we will set that payload equal to ours
             height = randomHeight();
+            System.out.println("height of node  "+ payload+" is " + height);
             next = new ArrayList<>(height);
             prev = new ArrayList<>(height);
 
@@ -114,7 +115,7 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
                 throw new IllegalStateException("Cannot call remove() back to back. Need to call a next() so that remove knows which value to delete");
 
                 //we want to just call remove method we already have set up that properly rearranges the references and removes a method by travering the list top down
-                
+
                 SkipListSet.this.remove(lastReturned.payload); //have to use this here in order to call remove since SkipListSet isnt static we need to tell java we want to use remove method in the "this instance" that SkipListSetIterator was created
                 lastReturned = null; //finally once the item is removed make sure that lastReturned is set to null to indicate the removal and enforce the rule that remove() cant be called again until next() is called again and retrieves a valu
         }
@@ -230,8 +231,49 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
 
     @Override
     public boolean remove(Object o) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'remove'");
+        
+        if(!(o instanceof Comparable<?>)) //if the object we are going to remove doesnt implement comparable than we cant compare it automatically return false signaling we couldnt delete the value
+            return false;
+
+        if(!(contains(o))) //also return false if the element user is trying to remove isnt even in the skip list saves us a lot of time.
+            return false; 
+
+        @SuppressWarnings("unchecked")
+        T e = (T) o; //since we already checked if o implemented the comparable interface we can safely cast o to T since T does implement the comparable interface
+
+        SkipListSetItem current = root; //have a current pointer point to root will use it to traverse
+
+        for(int i = current.height - 1; i >= 0; i--){ //same way we traversed for contains start at the max height of current
+    
+            while(current.next.get(i) != null && current.next.get(i).payload.compareTo(e) < 0){ //keep moving right on that height so long as next isnt null and the item to the right is < 0
+                current = current.next.get(i);
+            }
+            
+            //once we exit the loop that goes to the right if the node we wish to delete is right next to us update the pointers for that level. Make sure before that thought that it isnt null if its null dont do anything cause theres no pointers to adjust at that level i
+            if(current.next.get(i) != null && current.next.get(i).payload.compareTo(e) == 0){
+
+                current.next.set(i, current.next.get(i).next.get(i)); //delete the pointer at that level simply by making our currents next = to its next next and skipping over the node
+
+                if(current.next.get(i) != null) //before adjusting the previous make sure we even have a next because if we skipped over a node our next could be pointing to null now
+                    current.next.get(i).prev.set(i, current); //make sure to update the previous afterwards
+            }
+        }
+    
+        //after we delete from our tree the dummy root node's height could need some readjusting if the node we deleted was the tallest node in the list
+        int maxHeight = findMaxHeight()- 1;
+
+        if(root.height - 1  > maxHeight){//if our root height is bigger than the highest height in the skip list we need to adjust root height so it is the same as this new highest height
+            for(int i = root.height - 1; i > maxHeight; i--){ //loop from our roots height - 1 (zero based indexing) so long as i > than the current maxheight
+                root.next.remove(i); //remove the index in the next array list because there is nothing to point to at that level
+                root.prev.remove(i); //same thing with the prev array list
+            }
+
+            root.height = maxHeight + 1;
+        }
+
+        values--; //make sure once you delete a value successfully you decrement our values variable
+        return true; //return true once all is executed to signify that we succesfully removed an item.
+        
     }
 
     @Override
@@ -315,7 +357,19 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
             System.out.print ("Payload: " +current.payload +" Height: " + current.height+" -> ");
             current = current.next.get(0);
         }
+    }
 
+    public int findMaxHeight(){
 
+        int maxHeight = -1;
+        SkipListSetItem current = root;
+
+        while(current != null){
+            if(current.height > maxHeight)
+                maxHeight = current.height;
+                current = current.next.get(0);
+        }
+        
+        return maxHeight;
     }
 }
