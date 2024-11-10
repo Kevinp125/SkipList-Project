@@ -21,6 +21,7 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
     private int values;
     private int listMaxHeight; //function will keep track of the maxHeight one node can have in our skipList
 
+    //SkipListSet constructors
     public SkipListSet() {
         root = new SkipListSetItem(null, 1); //we initialize our root to have a payload of null because we are going to make it a dummy node. Also will start with an initial height of 1
         listMaxHeight = 3; //setting maxHeight to initially be 3 if we set it to 1 there might be some thrashing just have like some leeway for a treshold
@@ -288,40 +289,93 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         
     }
 
+    //checks if all the items in the collection are contained within my SkipListSet
     @Override
     public boolean containsAll(Collection<?> c) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'containsAll'");
+        
+        for(Object value: c){ //for every object in collection c 
+            if(!contains(value)) //check if that value isnt contained in the SkipListSet if it isnt we return false because it isnt a match
+                return false;
+        }
+
+        //if we leave loop without returning false its because all the values in the collection are contained in our SkipListSet
+        return true;
     }
 
+    //function adds all values that are in collection passed in to our SkipListSet so long as the value isnt already in the SkipListSet
     @Override
     public boolean addAll(Collection<? extends T> c) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'addAll'");
+    
+        boolean changeInSet = false; //initially set this variable to false the moment we add something new change the flag to true
+
+        for(T element : c){ //for every object in the collection we got passed in (we dont really have to check if the object is of type T because the collection being passed in is of a type that extends T)
+
+            if(!contains(element)){ //if the element isnt in our SkipListSet we want to add it and set flag to true
+                add(element);
+                changeInSet = true;
+            }
+        }
+
+        return changeInSet; //return whether our skipListSet was modified or not
     }
 
+    //retainAll essentially modifies our SkipListSet so that it becomes the intersection of whatever collection got passed in so if out SkipListSet was 1,2,4 and collection is 2 our new SkipListSet becomes 2
     @Override
     public boolean retainAll(Collection<?> c) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'retainAll'");
+
+        boolean changeInSet = false;
+
+        Iterator<T> iterator = iterator(); //creating an instnace of an iterator of our SkipListSet so we can traverse it
+
+        while(iterator.hasNext()){ //so long as we have a next...
+        
+            T element = iterator.next(); //store in element what the iterators next is
+
+            if(!(c.contains(element))){ //if that element isnt contained in the collection the collection we got passed in
+                iterator.remove(); //remove it from our SkipListSet
+                changeInSet = true; //flag that it was changed
+            }
+                
+        }
+
+        return changeInSet;
     }
 
+    //method removes from our SkipListSet all stuff that is in the collections passed in. Pretty much same thing as retains all except there isnt a ! in the if condition
     @Override
     public boolean removeAll(Collection<?> c) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'removeAll'");
+
+        boolean changeInSet = false;
+
+        Iterator<T> iterator = iterator(); //creating an instnace of an iterator of our SkipListSet so we can traverse it
+
+        while(iterator.hasNext()){ //so long as we have a next...
+        
+            T element = iterator.next(); //store in element what the iterators next is
+
+            if(c.contains(element)){ //if that element isnt contained in the collection the collection we got passed in
+                iterator.remove(); //remove it from our SkipListSet
+                changeInSet = true; //flag that it was changed
+            }
+                
+        }
+
+        return changeInSet;
     }
 
+    //funciton just completely wipes out our SkipListSet easy implementation
     @Override
     public void clear() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'clear'");
+        
+        root.next.set(0, null); //just make our root  = null and then set values to 0
+        values = 0;
+
     }
 
+    //professor said this one can return null so leave it like that
     @Override
     public Comparator<? super T> comparator() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'comparator'");
+        return null;
     }
 
 
