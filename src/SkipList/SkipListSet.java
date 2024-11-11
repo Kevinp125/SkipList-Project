@@ -46,7 +46,6 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         public SkipListSetItem(T payload){
             this.payload = payload; //when a SkipListSetItem gets intialized user will pass in a payload so we will set that payload equal to ours
             height = randomHeight();
-            System.out.println("height of node  "+ payload+" is " + height);
             next = new ArrayList<>(height);
             prev = new ArrayList<>(height);
 
@@ -202,9 +201,9 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
     @Override
     public boolean add(T e) {
 
-        if(contains(e)){
-            return false;
-        } //since it is a SortedSet NO duplicates use contains function to check if element is in skip list if it is just return false
+        // if(contains(e)){
+        //     return false;
+        // } //since it is a SortedSet NO duplicates use contains function to check if element is in skip list if it is just return false
 
 
         SkipListSetItem newItem = new SkipListSetItem(e); //create a new item since we will add it further down the line
@@ -227,6 +226,10 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
                 current = current.next.get(i);
             }
             
+            if (current.next.get(i) != null && current.next.get(i).payload.compareTo(e) == 0) {
+                return false; // Element already exists, so skip insertion
+            }
+
             if(i <= newItem.height - 1){ //in order to avoid an out of bounds exception only update links in our skip list when the height we are on is the same height as the new node we are adding
                 newItem.next.set(i, current.next.get(i)); //set the new nodes next equal to whatever our currents next at that level was so we dont lose information 
                 current.next.set(i, newItem); //once that is established set currents next at that level equal to our new node
@@ -243,11 +246,13 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
     @Override
     public boolean remove(Object o) {
         
+        boolean found = false;
+
         if(!(o instanceof Comparable<?>)) //if the object we are going to remove doesnt implement comparable than we cant compare it automatically return false signaling we couldnt delete the value
             return false;
 
-        if(!(contains(o))) //also return false if the element user is trying to remove isnt even in the skip list saves us a lot of time.
-            return false; 
+        // if(!(contains(o))) //also return false if the element user is trying to remove isnt even in the skip list saves us a lot of time.
+        //     return false; 
 
         @SuppressWarnings("unchecked")
         T e = (T) o; //since we already checked if o implemented the comparable interface we can safely cast o to T since T does implement the comparable interface
@@ -262,14 +267,17 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
             
             //once we exit the loop that goes to the right if the node we wish to delete is right next to us update the pointers for that level. Make sure before that thought that it isnt null if its null dont do anything cause theres no pointers to adjust at that level i
             if(current.next.get(i) != null && current.next.get(i).payload.compareTo(e) == 0){
-
+                found = true;
                 current.next.set(i, current.next.get(i).next.get(i)); //delete the pointer at that level simply by making our currents next = to its next next and skipping over the node
 
                 if(current.next.get(i) != null) //before adjusting the previous make sure we even have a next because if we skipped over a node our next could be pointing to null now
                     current.next.get(i).prev.set(i, current); //make sure to update the previous afterwards
             }
         }
-    
+        
+        if(!found){
+            return false;
+        }
         //after we delete from our tree the dummy root node's height could need some readjusting if the node we deleted was the tallest node in the list
         int maxHeight = findMaxHeight() - 1;
 
@@ -379,16 +387,33 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
     }
 
 
+    //returns first item in SkipListSet
     @Override
     public T first() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'first'");
+        if(isEmpty())
+            throw new NoSuchElementException("SkipListSet is empty"); //if roots next is null its empty so just throw an exception nothing to return
+
+        return root.next.get(0).payload; //otherwise return first item T the payload.
+
     }
 
     @Override
     public T last() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'last'");
+
+        if (isEmpty()) { //if it is empty no last element to return
+            throw new NoSuchElementException("SkipListSet is empty");
+        }
+
+        SkipListSetItem current = root;
+
+        for (int i = root.height - 1; i >= 0; i--) {
+            while (current.next.get(i) != null) { //so long as there is an express lane take it
+                current = current.next.get(i);
+            }
+        }
+    
+        return current.payload; // Return the payload of the last node
+
     }
 
     //dont have to do anything else for this function leave it as is

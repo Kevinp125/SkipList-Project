@@ -23,7 +23,7 @@
 
 src/SkipList/SkipListSetTester.java
 src/SkipList/SkipListTestHarness.java
-skiplist-output-example.txt
+skiplist-output-example-2.txt
 
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
