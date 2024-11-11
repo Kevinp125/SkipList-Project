@@ -276,7 +276,7 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
     public boolean remove(Object o) {
         
         boolean found = false;
-
+        int maxHeight = -1;
         if(!(o instanceof Comparable<?>)) //if the object we are going to remove doesnt implement comparable than we cant compare it automatically return false signaling we couldnt delete the value
             return false;
 
@@ -289,11 +289,14 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         SkipListSetItem current = root; //have a current pointer point to root will use it to traverse
 
         for(int i = current.height - 1; i >= 0; i--){ //same way we traversed for contains start at the max height of current
-    
+
             while(current.next.get(i) != null && current.next.get(i).payload.compareTo(e) < 0){ //keep moving right on that height so long as next isnt null and the item to the right is < 0
                 current = current.next.get(i);
             }
             
+            if(current.payload != null && current.height > maxHeight) //check to update our maxHeight to update our root height after we only want the height of the nodes that ARENT dummy nodes because current when first starting removal is alreayd at max Height
+                maxHeight = current.height;
+
             //once we exit the loop that goes to the right if the node we wish to delete is right next to us update the pointers for that level. Make sure before that thought that it isnt null if its null dont do anything cause theres no pointers to adjust at that level i
             if(current.next.get(i) != null && current.next.get(i).payload.compareTo(e) == 0){
                 found = true;
@@ -307,21 +310,12 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         if(!found){
             return false;
         }
-
-
-        if(current.next.get(0).height == root.height){
-             //after we delete from our tree the dummy root node's height could need some readjusting if the node we deleted was the tallest node in the list
-            int maxHeight = findMaxHeight() - 1; 
-
-            if(root.height - 1  > maxHeight){//if our root height is bigger than the highest height in the skip list we need to adjust root height so it is the same as this new highest height
     
-                for(int i = root.height - 1; i > maxHeight; i--){ //loop from our roots height - 1 (zero based indexing) so long as i > than the current maxheight
-                    root.next.remove(i); //remove the index in the next array list because there is nothing to point to at that level
-                    root.prev.remove(i); //same thing with the prev array list
-                }
-                root.height = maxHeight + 1;
-    
-            }
+        //after we delete from our tree the dummy root node's height could need some readjusting if the node we deleted was the tallest node in the list
+        if(root.height  > maxHeight){//if our root height is bigger than the highest height in the skip list we need to adjust root height so it is the same as this new highest height
+            root.next.subList(maxHeight, root.height).clear(); // Clear from maxHeight+1 to end
+            root.prev.subList(maxHeight, root.height).clear(); // Clear from maxHeight+1 to end
+            root.height = maxHeight;  // Adjust root height to match maxHeight
         }
 
         values--; //make sure once you delete a value successfully you decrement our values variable
