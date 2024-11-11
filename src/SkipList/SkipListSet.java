@@ -184,16 +184,45 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         return new SkipListSetIterator(); //just return an instance of our SkipListSetIterator which implemetns Iterator<T>
     }
 
+    //function returns an Array version of our colletion with the general type object
     @Override
     public Object[] toArray() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'toArray'");
+    
+        Object [] collectionArray = new Object [size()]; //make a new array the size of our skipListSet
+
+        Iterator<T> iterator = iterator(); //declare an iterator to go through our SkipListSet
+
+        int i = 0; //counter for the indexing of our array
+
+        while(iterator.hasNext()){
+            Object element = iterator.next(); //store the element from skipList
+            collectionArray[i++] = element; //add it to our array
+        }
+
+        return collectionArray; //finally return this array
     }
 
+    //funciton does same as function above except it takes in a specified type array and adds the collection elements into that array aligning with its type. Then it returns it
+    @SuppressWarnings("unchecked")
     @Override
     public <T> T[] toArray(T[] a) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'toArray'");
+        
+        if(a.length < size()){
+            a = (T[]) java.lang.reflect.Array.newInstance(a.getClass().getComponentType(), size()); //looks like a complicated line but from what I found a generic array cant be created normally since Java doesnt know type T is at compile time. Need to use reflection to retrieve types of elements stored in A and make a new instance with that type and size
+        }
+
+        //if the size of the array passed in was big enough to store all of our skiplistset elements just fill the indexes up
+
+        Iterator<T> iterator = (Iterator<T>) iterator();
+
+        int i = 0;
+
+        while(iterator.hasNext()){
+            T element = iterator.next();
+            a[i++] = element;
+        }
+
+        return a;
     }
 
 
