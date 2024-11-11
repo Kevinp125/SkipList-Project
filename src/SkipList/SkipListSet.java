@@ -307,17 +307,21 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         if(!found){
             return false;
         }
-        //after we delete from our tree the dummy root node's height could need some readjusting if the node we deleted was the tallest node in the list
-        int maxHeight = findMaxHeight() - 1;
 
-        if(root.height - 1  > maxHeight){//if our root height is bigger than the highest height in the skip list we need to adjust root height so it is the same as this new highest height
 
-            for(int i = root.height - 1; i > maxHeight; i--){ //loop from our roots height - 1 (zero based indexing) so long as i > than the current maxheight
-                root.next.remove(i); //remove the index in the next array list because there is nothing to point to at that level
-                root.prev.remove(i); //same thing with the prev array list
+        if(current.next.get(0).height == root.height){
+             //after we delete from our tree the dummy root node's height could need some readjusting if the node we deleted was the tallest node in the list
+            int maxHeight = findMaxHeight() - 1; 
+
+            if(root.height - 1  > maxHeight){//if our root height is bigger than the highest height in the skip list we need to adjust root height so it is the same as this new highest height
+    
+                for(int i = root.height - 1; i > maxHeight; i--){ //loop from our roots height - 1 (zero based indexing) so long as i > than the current maxheight
+                    root.next.remove(i); //remove the index in the next array list because there is nothing to point to at that level
+                    root.prev.remove(i); //same thing with the prev array list
+                }
+                root.height = maxHeight + 1;
+    
             }
-            root.height = maxHeight + 1;
-
         }
 
         values--; //make sure once you delete a value successfully you decrement our values variable
