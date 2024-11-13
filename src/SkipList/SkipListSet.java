@@ -10,9 +10,11 @@ package SkipList;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Random;
+import java.util.Set;
 import java.util.SortedSet;
 
 public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
@@ -277,6 +279,8 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         
         boolean found = false;
         int maxHeight = -1;
+        SkipListSetItem nodeBeingDeleted = null; 
+
         if(!(o instanceof Comparable<?>)) //if the object we are going to remove doesnt implement comparable than we cant compare it automatically return false signaling we couldnt delete the value
             return false;
 
@@ -300,6 +304,7 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
             //once we exit the loop that goes to the right if the node we wish to delete is right next to us update the pointers for that level. Make sure before that thought that it isnt null if its null dont do anything cause theres no pointers to adjust at that level i
             if(current.next.get(i) != null && current.next.get(i).payload.compareTo(e) == 0){
                 found = true;
+                nodeBeingDeleted = current.next.get(i);
                 current.next.set(i, current.next.get(i).next.get(i)); //delete the pointer at that level simply by making our currents next = to its next next and skipping over the node
 
                 if(current.next.get(i) != null) //before adjusting the previous make sure we even have a next because if we skipped over a node our next could be pointing to null now
@@ -310,9 +315,11 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         if(!found){
             return false;
         }
-    
+        
+
         //after we delete from our tree the dummy root node's height could need some readjusting if the node we deleted was the tallest node in the list
-        if(root.height  > maxHeight){//if our root height is bigger than the highest height in the skip list we need to adjust root height so it is the same as this new highest height
+        if(nodeBeingDeleted.height == root.height){//if our root height is bigger than the highest height in the skip list we need to adjust root height so it is the same as this new highest height
+            
             root.next.subList(maxHeight, root.height).clear(); // Clear from maxHeight+1 to end
             root.prev.subList(maxHeight, root.height).clear(); // Clear from maxHeight+1 to end
             root.height = maxHeight;  // Adjust root height to match maxHeight
@@ -377,25 +384,31 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
     }
 
     //method removes from our SkipListSet all stuff that is in the collections passed in. Pretty much same thing as retains all except there isnt a ! in the if condition
+    @SuppressWarnings("unchecked")
     @Override
     public boolean removeAll(Collection<?> c) {
 
-        boolean changeInSet = false;
+        boolean changeInSet = false; ///declare a boolean to keep track of whether or not our set changed
 
-        Iterator<T> iterator = iterator(); //creating an instnace of an iterator of our SkipListSet so we can traverse it
+        for(Object payload : c){ //loop through all the objects in the collection we are passed in
 
-        while(iterator.hasNext()){ //so long as we have a next...
-        
-            T element = iterator.next(); //store in element what the iterators next is
+            T element; //declare an element variable since we are going to cast the payload object to a T type further down
 
-            if(c.contains(element)){ //if that element isnt contained in the collection the collection we got passed in
-                iterator.remove(); //remove it from our SkipListSet
-                changeInSet = true; //flag that it was changed
+            if(payload instanceof Comparable<?>) //make sure that object in colleciton passed in is comparable if it is cast it to T
+                element = (T) payload; //cast the arbitrary object in our collection to type T since we verified it is comparable 
+            else
+                return changeInSet;//if not just reutrn false because we cant remove non comparable items.
+            
+            
+            if(this.contains(element)){ //if our skipList contains the element from the colleciton
+                this.remove(element); //remove it from our skipList
+                changeInSet = true; //flag our variable to true since our SkipListSet has changed
             }
-                
+
         }
 
-        return changeInSet;
+        return changeInSet; //return this variable
+
     }
 
     //funciton just completely wipes out our SkipListSet easy implementation
@@ -505,8 +518,6 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
             listMaxHeight = newMaxHeight;
         }
     }
-
-    // *****ASK PROFESSOR HE SAYS TO NOT CALL IT AUTOMATICALLY SO DOES HE JUST WANT FUNCTION HERE TO BE CALLED MANUALLY BY USER*****
 
     //function randomizes all the heights in our skipList the approach I will take is just readding all the nodes to a new skiplist essentially
     //so i can just resuse my logic and not reinvent the wheel
