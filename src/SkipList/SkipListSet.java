@@ -10,11 +10,10 @@ package SkipList;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Random;
-import java.util.Set;
 import java.util.SortedSet;
 
 public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
@@ -26,7 +25,7 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
     //SkipListSet constructors
     public SkipListSet() {
         root = new SkipListSetItem(null, 1); //we initialize our root to have a payload of null because we are going to make it a dummy node. Also will start with an initial height of 1
-        listMaxHeight = 3; //setting maxHeight to initially be 3 if we set it to 1 there might be some thrashing just have like some leeway for a treshold
+        listMaxHeight = 8; //setting maxHeight to initially be 3 if we set it to 1 there might be some thrashing just have like some leeway for a treshold
         values = 0; //when skiplist is first made it has zero values
     }
 
@@ -278,14 +277,10 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
     public boolean remove(Object o) {
         
         boolean found = false;
-        int maxHeight = -1;
         SkipListSetItem nodeBeingDeleted = null; 
 
         if(!(o instanceof Comparable<?>)) //if the object we are going to remove doesnt implement comparable than we cant compare it automatically return false signaling we couldnt delete the value
             return false;
-
-        // if(!(contains(o))) //also return false if the element user is trying to remove isnt even in the skip list saves us a lot of time.
-        //     return false; 
 
         @SuppressWarnings("unchecked")
         T e = (T) o; //since we already checked if o implemented the comparable interface we can safely cast o to T since T does implement the comparable interface
@@ -298,9 +293,6 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
                 current = current.next.get(i);
             }
             
-            if(current.payload != null && current.height > maxHeight) //check to update our maxHeight to update our root height after we only want the height of the nodes that ARENT dummy nodes because current when first starting removal is alreayd at max Height
-                maxHeight = current.height;
-
             //once we exit the loop that goes to the right if the node we wish to delete is right next to us update the pointers for that level. Make sure before that thought that it isnt null if its null dont do anything cause theres no pointers to adjust at that level i
             if(current.next.get(i) != null && current.next.get(i).payload.compareTo(e) == 0){
                 found = true;
@@ -318,11 +310,25 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         
 
         //after we delete from our tree the dummy root node's height could need some readjusting if the node we deleted was the tallest node in the list
-        if(nodeBeingDeleted.height == root.height){//if our root height is bigger than the highest height in the skip list we need to adjust root height so it is the same as this new highest height
+        if(nodeBeingDeleted.height == root.height){//if ther height of the nodeBeingDeleted is the same as our root
+            boolean otherMaxHeightNodes = false; //have a bool to check if any other Nodes in the SkipListSet have the same height as the node being deleted
+
+            SkipListSetItem walker = root.next.get(0);
+
+            while(walker != null){
+                if(walker.height == nodeBeingDeleted.height){
+                    otherMaxHeightNodes = true; //if we find a node with the same height as the one being deleted set the bool to true and break
+                    break;
+                }
+                walker = walker.next.get(0);
+            }
             
-            root.next.subList(maxHeight, root.height).clear(); // Clear from maxHeight+1 to end
-            root.prev.subList(maxHeight, root.height).clear(); // Clear from maxHeight+1 to end
-            root.height = maxHeight;  // Adjust root height to match maxHeight
+            if(!otherMaxHeightNodes){ //we use this bool now to figure out if we need to adjust the root height. If there isnt any other nodes with the same height as the node we deleted it means the node we deleted was biggest height in SkipList
+                int maxHeight = findMaxHeight();
+                root.next.subList(maxHeight, root.height).clear(); // Clear from maxHeight+1 to end
+                root.prev.subList(maxHeight, root.height).clear(); // Clear from maxHeight+1 to end
+                root.height = maxHeight;  // Adjust root height to match maxHeight
+            }
         }
 
         values--; //make sure once you delete a value successfully you decrement our values variable
@@ -479,16 +485,6 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
 
 
     //==============Below this is all my personal helper functions=================
-
-    public void detailedPrint(){
-
-        SkipListSetItem current = root.next.get(0);
-
-        while(current.next.get(0) != null){
-            System.out.print ("Payload: " +current.payload +" Height: " + current.height+" -> ");
-            current = current.next.get(0);
-        }
-    }
 
     public int findMaxHeight(){
 
