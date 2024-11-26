@@ -476,6 +476,24 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         return this.size() == ((Set<T>) obj).size() && this.containsAll((Collection<?>) obj); //now that we checked previously if obj was a set we can cast safely and compare objs size with our sets size if that and their elements are the same return true
     }
 
+    //gives a hash for the set by summing all the hash codes for all the elemets in the set
+    @Override
+    public int hashCode(){
+        
+        int setHash = 0; //initialize a setHash variable that stores the sum of all the hashCodes in a set
+
+        for(T item : this){ //iterate through our skipListSet and for each item...
+
+            if(item == null) //if the item we are on is null the function contract says that we just add zero for the setHash value
+                setHash += 0;
+            
+            else //if it isnt null call the hashCode function for that item. If it is a string it returns the hashCode for a string if it is an int it will do it for an int and so on. Add this to setHash value
+                setHash += item.hashCode();
+        }
+
+        return setHash; //finally return the hash value of our set
+    }
+
     //dont have to do anything else for this function leave it as is
     @Override
     public SortedSet<T> subSet(T fromElement, T toElement) {
