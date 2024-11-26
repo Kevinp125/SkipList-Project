@@ -11,9 +11,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Random;
+import java.util.Set;
 import java.util.SortedSet;
 
 public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
@@ -460,6 +460,20 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
     
         return current.payload; // Return the payload of the last node
 
+    }
+
+    //function takes in an obj and checks if it has the same elements as our SkipListSet
+    @SuppressWarnings("unchecked")
+    @Override
+    public boolean equals(Object obj){
+        
+        if(this == obj)
+            return true; //pointing to the same thing so return true to signify they are equal
+
+        if(!(obj instanceof Set)) //check if the obj is even an instanceof a set before we proceed further if it isnt we return false because our thing is a Set they arent equal
+            return false;
+        
+        return this.size() == ((Set<T>) obj).size() && this.containsAll((Collection<?>) obj); //now that we checked previously if obj was a set we can cast safely and compare objs size with our sets size if that and their elements are the same return true
     }
 
     //dont have to do anything else for this function leave it as is
