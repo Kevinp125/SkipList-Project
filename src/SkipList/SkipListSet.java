@@ -25,7 +25,7 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
     //SkipListSet constructors
     public SkipListSet() {
         root = new SkipListSetItem(null, 1); //we initialize our root to have a payload of null because we are going to make it a dummy node. Also will start with an initial height of 1
-        listMaxHeight = 8; //setting maxHeight to initially be 3 if we set it to 1 there might be some thrashing just have like some leeway for a treshold
+        listMaxHeight = 8; //setting maxHeight to initially be 8 if we set it to 1 there might be some thrashing just have like some leeway for a treshold
         values = 0; //when skiplist is first made it has zero values
     }
 
@@ -185,7 +185,7 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
         return new SkipListSetIterator(); //just return an instance of our SkipListSetIterator which implemetns Iterator<T>
     }
 
-    //function returns an Array version of our colletion with the general type object
+    //function returns an Array version of our collection with the general type object
     @Override
     public Object[] toArray() {
     
@@ -230,11 +230,6 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
     //Function will add an item "e" to our skip list
     @Override
     public boolean add(T e) {
-
-        // if(contains(e)){
-        //     return false;
-        // } //since it is a SortedSet NO duplicates use contains function to check if element is in skip list if it is just return false
-
 
         SkipListSetItem newItem = new SkipListSetItem(e); //create a new item since we will add it further down the line
         SkipListSetItem current = root; //have a current pointer point to root will use it to traverse
@@ -417,7 +412,7 @@ public class SkipListSet<T extends Comparable<T>> implements SortedSet<T> {
 
     }
 
-    //funciton just completely wipes out our SkipListSet easy implementation
+    //function just completely wipes out our SkipListSet easy implementation
     @Override
     public void clear() {
         
